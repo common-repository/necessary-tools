@@ -1,0 +1,28 @@
+#!/bin/bash
+
+function usage {
+	echo "Usage: uglify option /path/to/scripts/"
+}
+
+if [ 0 != "$#" ] && [ -d "$1" ]; then
+	dir=$1
+	files=`ls $dir | perl -ne '$match = $_ =~ /^.*\b(\S+(?<!\.min)\.js)$/; if ( $match == 1 ) { print $_ =~ /^.*\b(\S+(?<!\.min)\.js)$/; print " "; }'`
+	echo "$files"
+	if [[ "" != "$files" ]]; then
+		echo "Uglifying scripts in $dir"
+		echo "Found files: $files"
+		IFS=' ' read -r -a file_array <<< "$files"
+		for file in "${file_array[@]}"
+		do
+			name=`expr "$file" : '\(.*\)\.js'`
+			echo "- Uglifying: $file"
+			uglifyjs "$dir/$file" -cmo "$dir/$name.min.js"
+		done
+
+		echo "Done."
+	else
+		echo "No script files were found."
+	fi
+else
+	usage
+fi
